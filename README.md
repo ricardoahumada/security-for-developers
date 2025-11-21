@@ -1,4 +1,4 @@
-# security-for-developers
+# Security for developers
 
 ## Module 1: Security Fundamentals
 ## Module 2: OAuth 2.0 Flows & Security
