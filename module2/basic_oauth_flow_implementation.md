@@ -551,6 +551,10 @@ if (typeof module !== 'undefined' && module.exports) {
         TokenManager
     };
 }
+
+// Execute demo
+demonstrateAllFlows();
+
 ```
 
 ## Flow Comparison Summary

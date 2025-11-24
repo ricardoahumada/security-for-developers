@@ -1,4 +1,4 @@
-# SAML Implementation Examples
+# SAML Implementation Examples (Fixed)
 
 ## Overview
 
@@ -11,7 +11,7 @@ This file contains comprehensive SAML implementation examples, XML configuration
 ```python
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import base64
 import hashlib
 import secrets
@@ -36,13 +36,13 @@ class SAMLAssertionBuilder:
         
         # Set default session timeout
         if not session_not_on_or_after:
-            session_not_on_or_after = datetime.utcnow() + timedelta(hours=8)
+            session_not_on_or_after = datetime.now(timezone.utc) + timedelta(hours=8)
         
         # Create assertion element
         assertion = ET.Element(f"{{{self.SAML_NS}}}Assertion")
         assertion.set("ID", f"_{secrets.token_hex(16)}")
         assertion.set("Version", "2.0")
-        assertion.set("IssueInstant", datetime.utcnow().isoformat())
+        assertion.set("IssueInstant", datetime.now(timezone.utc).isoformat())
         
         # Add issuer
         issuer = ET.SubElement(assertion, f"{{{self.SAML_NS}}}Issuer")
@@ -95,7 +95,7 @@ class SAMLAssertionBuilder:
         """Create SAML conditions element"""
         
         conditions = ET.Element(f"{{{self.SAML_NS}}}Conditions")
-        conditions.set("NotBefore", datetime.utcnow().isoformat())
+        conditions.set("NotBefore", datetime.now(timezone.utc).isoformat())
         conditions.set("NotOnOrAfter", not_on_or_after.isoformat())
         
         # Audience restriction
@@ -115,9 +115,7 @@ class SAMLAssertionBuilder:
     def _create_attribute_statement(self, attributes: Dict[str, str]) -> ET.Element:
         """Create SAML attribute statement"""
         
-        attribute_statement = ET.SubElement(
-            f"{{{self.SAML_NS}}}AttributeStatement"
-        )
+        attribute_statement = ET.Element(f"{{{self.SAML_NS}}}AttributeStatement")
         
         for attr_name, attr_value in attributes.items():
             attribute = ET.SubElement(
@@ -204,7 +202,7 @@ class SAMLResponseBuilder:
         response.set("xmlns:samlp", "urn:oasis:names:tc:SAML:2.0:protocol")
         response.set("ID", f"_{secrets.token_hex(16)}")
         response.set("Version", "2.0")
-        response.set("IssueInstant", datetime.utcnow().isoformat())
+        response.set("IssueInstant", datetime.now(timezone.utc).isoformat())
         response.set("Destination", destination)
         response.set("InResponseTo", in_response_to)
         
@@ -230,12 +228,22 @@ class SAMLResponseBuilder:
     def _create_status(self, status_code: str) -> ET.Element:
         """Create SAML status element"""
         
-        status = ET.SubElement("samlp:Status")
+        status = ET.Element("samlp:Status")
         
         status_code_element = ET.SubElement(status, "samlp:StatusCode")
         status_code_element.set("Value", status_code)
         
         return status
+    
+    def _format_xml(self, element: ET.Element) -> str:
+        """Format XML with proper indentation"""
+        from xml.dom import minidom
+        
+        rough_string = ET.tostring(element, encoding='unicode')
+        reparsed = minidom.parseString(rough_string)
+        
+        # Remove extra whitespace
+        return reparsed.toprettyxml(indent="  ").split('\n', 1)[1]
 
 # Usage Example
 def demonstrate_saml_assertion_creation():
@@ -300,7 +308,7 @@ demonstrate_saml_assertion_creation()
 from typing import Dict, List
 import ssl
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timezone
 
 class SAMLIdentityProvider:
     """SAML Identity Provider implementation"""
@@ -567,25 +575,27 @@ import urllib.parse
 import urllib.request
 from typing import Dict, Optional
 import base64
+from datetime import datetime, timezone
+import secrets
 
 class SAMLSSOHandler:
     """Handle complete SAML SSO flow"""
     
-    def __init__(self, idp_metadata: str, sp_metadata: str, 
+    def __init__(self, idp_metadata: str, sp_metadata: Dict, 
                  sp_private_key: str, idp_certificate: str):
-        self.idp_metadata = self._parse_metadata(idp_metadata)
-        self.sp_metadata = self._parse_metadata(sp_metadata)
         self.sp_private_key = sp_private_key
         self.idp_certificate = idp_certificate
+        self.idp_metadata = self._parse_metadata(idp_metadata, idp_certificate)
+        self.sp_metadata = sp_metadata  # Fixed: was trying to parse SP metadata
         self.saml_requests = {}  # Store pending requests
     
-    def _parse_metadata(self, metadata: str) -> Dict:
+    def _parse_metadata(self, metadata: str, certificate: str = None) -> Dict:
         """Parse SAML metadata (simplified)"""
         # In production, use proper XML parsing
         return {
             "entity_id": "placeholder",
             "sso_service": {"location": "https://idp.com/sso"},
-            "certificate": self.idp_certificate
+            "certificate": certificate
         }
     
     def create_authentication_request(self, relay_state: str = None) -> Dict[str, str]:
@@ -603,7 +613,7 @@ class SAMLSSOHandler:
         # Store request for validation
         self.saml_requests[request_id] = {
             "relay_state": relay_state,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),  # Fixed: timezone-aware datetime
             "request": auth_request
         }
         
@@ -633,7 +643,7 @@ class SAMLSSOHandler:
         request.append(f'    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"')
         request.append(f'    ID="{request_id}"')
         request.append(f'    Version="2.0"')
-        request.append(f'    IssueInstant="{datetime.utcnow().isoformat()}"')
+        request.append(f'    IssueInstant="{datetime.now(timezone.utc).isoformat()}"')  # Fixed: timezone-aware
         request.append(f'    Destination="{self.idp_metadata["sso_service"]["location"]}"')
         request.append(f'    ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"')
         request.append(f'    AssertionConsumerServiceURL="{self.sp_metadata.get("acs_url")}"')
@@ -810,7 +820,7 @@ class SAMLSSOHandler:
             "user_id": user_info["name_id"],
             "attributes": user_info["attributes"],
             "session_index": user_info["session_index"],
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),  # Fixed: timezone-aware
             "sso_source": "saml"
         }
         
@@ -1008,7 +1018,8 @@ demonstrate_saml_sso_flow()
 ```python
 import re
 from typing import Dict, List, Set
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import xml.etree.ElementTree as ET
 
 class SAMLSecurityManager:
     """SAML Security Best Practices Implementation"""
@@ -1106,7 +1117,7 @@ class SAMLSecurityManager:
         if issue_instant:
             try:
                 issue_time = self._parse_saml_datetime(issue_instant)
-                now = datetime.utcnow()
+                now = datetime.now(timezone.utc)  # Fixed: timezone-aware
                 
                 # Check for future issue times (clock skew tolerance)
                 max_future = now + self.security_config["allowed_clock_skew"]
@@ -1130,7 +1141,7 @@ class SAMLSecurityManager:
         if not_on_or_after:
             try:
                 not_on_or_after_time = self._parse_saml_datetime(not_on_or_after)
-                now = datetime.utcnow()
+                now = datetime.now(timezone.utc)  # Fixed: timezone-aware
                 
                 if now > not_on_or_after_time:
                     errors.append(f"Assertion expired at: {not_on_or_after}")
@@ -1211,7 +1222,7 @@ class SAMLSecurityManager:
             not_before = conditions.get("NotBefore")
             not_on_or_after = conditions.get("NotOnOrAfter")
             
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)  # Fixed: timezone-aware
             
             if not_before:
                 try:
@@ -1242,7 +1253,15 @@ class SAMLSecurityManager:
     def _parse_saml_datetime(self, datetime_str: str) -> datetime:
         """Parse SAML datetime format"""
         # SAML uses ISO 8601 format
-        return datetime.fromisoformat(datetime_str.replace('Z', '+00:00'))
+        try:
+            # Handle both Z suffix and timezone offsets
+            if datetime_str.endswith('Z'):
+                datetime_str = datetime_str[:-1] + '+00:00'
+            return datetime.fromisoformat(datetime_str)
+        except ValueError:
+            # Fallback for older Python versions or edge cases
+            from dateutil import parser
+            return parser.parse(datetime_str)
 
 class SAMLSConfigurationValidator:
     """Validate SAML configuration for security best practices"""

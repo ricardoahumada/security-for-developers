@@ -300,15 +300,19 @@ function demonstrateOAuthComponents() {
         );
 
         console.log('Access tokens generated:', tokens);
+
+        // Validate access using the REAL access token
+        const resourceValidation = resourceServer.validateAccessToken(
+            tokens.accessToken,  // Use the actual generated token!
+            ['read']
+        );
+
+        console.log('Resource access validation:', resourceValidation);
+    } else {
+        console.log('Failed to exchange authorization code for tokens');
     }
+    
 
-    // Validate access
-    const resourceValidation = resourceServer.validateAccessToken(
-        'access-token-example',
-        ['read']
-    );
-
-    console.log('Resource access validation:', resourceValidation);
 }
 
 // Component Relationship Diagram
@@ -350,6 +354,9 @@ if (typeof module !== 'undefined' && module.exports) {
         demonstrateOAuthComponents
     };
 }
+
+// Call demo function
+demonstrateOAuthComponents();
 ```
 
 ## Component Types Comparison
