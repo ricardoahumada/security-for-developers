@@ -12,7 +12,7 @@ This file contains comprehensive SSO architecture patterns, configurations, and 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 
 @dataclass
@@ -77,13 +77,13 @@ class SSOIdentityProvider:
     
     def _create_session(self, user_id: str, application_id: str) -> str:
         """Create SSO session"""
-        session_id = f"sso_session_{user_id}_{datetime.utcnow().timestamp()}"
+        session_id = f"sso_session_{user_id}_{datetime.now(timezone.utc).timestamp()}"
         
         session = Session(
             id=session_id,
             user_id=user_id,
-            created_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(hours=8),
+            created_at=datetime.now(timezone.utc),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=8),
             applications=[application_id]
         )
         
@@ -97,7 +97,7 @@ class SSOIdentityProvider:
             return None
         
         # Check session expiry
-        if datetime.utcnow() > session.expires_at:
+        if datetime.now(timezone.utc) > session.expires_at:
             del self.sessions[session_id]
             return None
         
@@ -118,7 +118,8 @@ class SSOIdentityProvider:
             id=user.id,
             email=user.email,
             roles=user.roles,
-            attributes=filtered_attributes
+            attributes=filtered_attributes,
+            created_at=user.created_at
         )
 
 class ServiceProvider(ABC):
@@ -197,11 +198,11 @@ def demonstrate_centralized_sso():
         User("1", "john@company.com", ["manager"], {
             "first_name": "John", "last_name": "Doe", 
             "department": "Sales", "role": "manager"
-        }),
+        }, datetime.now(timezone.utc)),
         User("2", "jane@partners.company.com", ["analyst"], {
             "first_name": "Jane", "last_name": "Smith",
             "department": "Analytics", "role": "analyst"
-        })
+        }, datetime.now(timezone.utc))
     ]
     
     for user in users:
@@ -247,9 +248,19 @@ demonstrate_centralized_sso()
 
 ```python
 import xml.etree.ElementTree as ET
-from typing import Dict, List
+from typing import Dict, List, Optional
 import hashlib
 import time
+from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass
+
+@dataclass
+class User:
+    id: str
+    email: str
+    roles: List[str]
+    attributes: Dict[str, any]
+    created_at: datetime
 
 class FederationPartner:
     """Represents a partner organization in federation"""
@@ -281,7 +292,7 @@ class FederatedSSO:
             'their_entity_id': partner.entity_id,
             'our_cert': our_cert,
             'their_cert': partner.certificate,
-            'established': datetime.utcnow()
+            'established': datetime.now(timezone.utc)
         }
         
         print(f"✅ Federation trust established with {partner.name}")
@@ -294,7 +305,7 @@ class FederatedSSO:
         assertion = ET.Element("saml:Assertion")
         assertion.set("xmlns:saml", "urn:oasis:names:tc:SAML:2.0:assertion")
         assertion.set("ID", f"_{hashlib.md5(user.id.encode()).hexdigest()}")
-        assertion.set("IssueInstant", datetime.utcnow().isoformat())
+        assertion.set("IssueInstant", datetime.now(timezone.utc).isoformat())
         
         # Issuer
         issuer_elem = ET.SubElement(assertion, "saml:Issuer")
@@ -308,8 +319,8 @@ class FederatedSSO:
         
         # Conditions
         conditions = ET.SubElement(assertion, "saml:Conditions")
-        conditions.set("NotBefore", datetime.utcnow().isoformat())
-        conditions.set("NotOnOrAfter", (datetime.utcnow() + timedelta(hours=1)).isoformat())
+        conditions.set("NotBefore", datetime.now(timezone.utc).isoformat())
+        conditions.set("NotOnOrAfter", (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat())
         
         audience_restriction = ET.SubElement(conditions, "saml:AudienceRestriction")
         audience_elem = ET.SubElement(audience_restriction, "saml:Audience")
@@ -367,13 +378,14 @@ class FederatedSSO:
                     attributes[attr_name] = attr_value_elem.text
             
             # Create or find user
-            user_id = f"fed_{partner_id}_{hash(email).to_bytes(4, 'big').hex()}"
+            user_id = f"fed_{partner_id}_{hashlib.md5(email.encode()).hexdigest()[:8]}"
             
             user = User(
                 id=user_id,
                 email=email,
                 roles=["federated_user"],  # Default role for federated users
-                attributes=attributes
+                attributes=attributes,
+                created_at=datetime.now(timezone.utc)
             )
             
             self.local_users[user_id] = user
@@ -411,7 +423,7 @@ def demonstrate_federated_sso():
     local_user = User("local1", "alice@company.com", ["employee"], {
         "first_name": "Alice", "last_name": "Johnson",
         "department": "Engineering"
-    })
+    }, datetime.now(timezone.utc))
     federated_sso.local_users[local_user.id] = local_user
     
     # Establish federation with partner company
@@ -465,7 +477,8 @@ demonstrate_federated_sso()
 ```python
 from enum import Enum
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
+from datetime import datetime, timedelta, timezone
 
 class CloudProvider(Enum):
     AZURE_AD = "azure_ad"
@@ -652,7 +665,7 @@ class CloudFirstSSOOrchestrator:
         mapped_user.update({
             "provider": provider_name,
             "provider_user_id": user_info.get("sub"),
-            "authenticated_at": datetime.utcnow(),
+            "authenticated_at": datetime.now(timezone.utc),
             "permissions": self._extract_permissions(user_info, provider_name)
         })
         
@@ -849,6 +862,7 @@ security_settings:
 from enum import Enum
 from typing import List, Dict, Set
 import time
+from datetime import datetime, timezone
 
 class MigrationPhase(Enum):
     ASSESSMENT = "assessment"
@@ -1055,7 +1069,7 @@ class SSOMigrationPlanner:
         """Generate comprehensive migration report"""
         report = []
         report.append("# SSO Migration Strategy Report")
-        report.append(f"Generated: {datetime.utcnow().isoformat()}\n")
+        report.append(f"Generated: {datetime.now(timezone.utc).isoformat()}\n")
         
         # Executive Summary
         total_apps = len(self.legacy_apps)
@@ -1084,9 +1098,7 @@ class SSOMigrationPlanner:
             report.append(f"### {phase['phase']}")
             report.append(f"Duration: {phase['duration_weeks']} weeks")
             report.append(f"Applications: {', '.join(phase['applications'])}")
-            report.append("Objectives:")
-            for obj in phase['objectives'].split(', '):
-                report.append(f"  - {obj}")
+            report.append(f"Objectives: {phase['objectives']}")
             report.append("Success Criteria:")
             for criteria in phase['success_criteria']:
                 report.append(f"  - {criteria}")
