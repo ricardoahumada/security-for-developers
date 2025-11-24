@@ -1,6 +1,6 @@
 # 5. JWT Security Vulnerabilities and Attacks
 
-## Vulnerability 1: None Algorithm Attack
+## Vulnerability 01: None Algorithm Attack
 
 **Problem**: Setting algorithm to "none" bypasses signature verification.
 
@@ -42,7 +42,7 @@ if (decodedHeader.alg === 'none') {
 }
 ```
 
-## Vulnerability 2: Algorithm Confusion Attack
+## Vulnerability 02: Algorithm Confusion Attack
 
 **Problem**: Switching from RS256 to HS256 using public key as HMAC secret.
 
@@ -84,7 +84,7 @@ jwt.verify(token, publicKey, {
 });
 ```
 
-## Vulnerability 3: Key Confusion via kid Header
+## Vulnerability 03: Key Confusion via kid Header
 
 **Problem**: Manipulating the "kid" (key ID) header to access unintended keys.
 
@@ -121,7 +121,7 @@ function selectKey(header) {
 }
 ```
 
-## Vulnerability 4: JWT Timing Attacks
+## Vulnerability 04: JWT Timing Attacks
 
 **Problem**: Timing differences in verification can leak information.
 
@@ -149,3 +149,142 @@ try {
   return false;
 }
 ```
+
+### Vulnerability 5: Token Hijacking via Weak Secrets
+```javascript
+// VULNERABLE - Weak secret
+const secret = "secret"; // Too predictable
+
+// ATTACKER can brute force this
+for (let guess = 0; guess < 10000; guess++) {
+  try {
+    jwt.verify(token, String(guess));
+    console.log("Found secret:", guess);
+  } catch (e) {}
+}
+```
+
+**Prevention:** Use cryptographically strong secrets (32+ random characters).
+
+---
+
+### Vulnerability 6: JSON Injection Attacks
+```javascript
+// VULNERABLE - No validation of payload content
+const decoded = jwt.decode(token);
+user.role = decoded.role; // Could be malicious object
+```
+
+**Prevention:** Strictly validate all JWT payload claims and their expected data types.
+
+---
+
+### Vulnerability 7: Freshness Attacks (Replay Attacks)
+```javascript
+// VULNERABLE - No expiration or replay protection
+const token = jwt.sign({ userId: "123" }, secret);
+// This token is valid forever!
+```
+
+**Prevention:** Always include `exp` claim and implement anti-replay mechanisms for sensitive operations.
+
+---
+
+### Vulnerability 8: Key Leakage via Error Messages
+```javascript
+// VULNERABLE - Reveals too much information
+if (err.message.includes("secret")) {
+  return "Secret is wrong";
+}
+if (err.message.includes("expired")) {
+  return "Token expired";
+}
+```
+
+**Prevention:** Use generic error messages that don't reveal which specific validation failed.
+
+---
+
+### Vulnerability 9: JWT Header Confusion (typ confusion)
+```javascript
+// ATTACK - Using wrong type header
+header = {
+  typ: "JWS", // Should be "JWT"
+  alg: "HS256"
+}
+```
+
+**Prevention:** Always validate the `typ` header matches expected value.
+
+---
+
+### Vulnerability 10: Weak Algorithm Support
+```javascript
+// VULNERABLE - Allowing weak algorithms
+jwt.verify(token, key, { 
+  algorithms: ['HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512'] 
+});
+```
+
+**Prevention:** Only allow the specific algorithm(s) needed by your application. Don't allow multiple algorithms unless absolutely necessary.
+
+---
+
+### Vulnerability 11: Insufficient Audience Validation
+```javascript
+// VULNERABLE - No audience check
+jwt.verify(token, key); // Works for any audience!
+```
+
+**Prevention:** Always validate `aud` claim matches your application's audience identifier.
+
+---
+
+### Vulnerability 12: Weak Token Expiration Management
+```javascript
+// VULNERABLE - Very long expiration
+jwt.sign(payload, key, { expiresIn: '365d' }); // 1 year!
+
+// VULNERABLE - No expiration at all
+jwt.sign(payload, key); // Never expires!
+```
+
+**Prevention:** Use short expiration times (15 minutes to 1 hour) for access tokens. Use refresh tokens for longer sessions.
+
+---
+
+## **Comprehensive Security Checklist**
+
+### **Algorithm Security:**
+- ✅ Never accept `alg: "none"`
+- ✅ Restrict to specific algorithms only
+- ✅ Separate algorithm storage from tokens
+- ✅ Use strong cryptographic keys (32+ chars)
+
+### **Token Validation:**
+- ✅ Validate `iss` (issuer)
+- ✅ Validate `aud` (audience) 
+- ✅ Validate `exp` (expiration)
+- ✅ Validate `nbf` (not before)
+- ✅ Validate `typ` (type)
+- ✅ Validate payload content structure
+
+### **Key Management:**
+- ✅ Sanitize `kid` header parameter
+- ✅ Use whitelist for allowed keys
+- ✅ Implement proper key rotation
+- ✅ Secure key storage (not in code)
+- ✅ Use different keys for different environments
+
+### **Error Handling:**
+- ✅ Generic error messages
+- ✅ Don't leak implementation details
+- ✅ Log security events properly
+- ✅ Monitor for unusual patterns
+
+### **Operational Security:**
+- ✅ Short token lifetimes
+- ✅ Refresh token rotation
+- ✅ Rate limiting on validation endpoints
+- ✅ Anti-replay mechanisms
+- ✅ Regular security audits
