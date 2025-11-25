@@ -662,9 +662,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // Run demo if executed directly
-if (typeof window === 'undefined') {
-    demonstrateSecurityMeasures();
-}
+demonstrateSecurityMeasures();
 ```
 
 ## Security Implementation Checklist
