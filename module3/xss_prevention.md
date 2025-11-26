@@ -1,8 +1,5 @@
 # XSS Prevention Code Examples
 
-**Author:** MiniMax Agent  
-**Module Reference:** Module 3 - Cross-Site Scripting (XSS)  
-**Last Updated:** 2025-11-15  
 
 ## Overview
 This file contains practical code examples demonstrating XSS prevention techniques across different programming languages and frameworks, covering stored, reflected, and DOM-based XSS vulnerabilities.

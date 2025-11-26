@@ -1,8 +1,5 @@
 # Log Security Monitoring and Alerting
 
-**Author:** MiniMax Agent  
-**Date:** 2025-11-15
-
 ## Overview
 
 This document provides advanced security monitoring and alerting capabilities for log data, including real-time threat detection, compliance monitoring, and automated incident response.

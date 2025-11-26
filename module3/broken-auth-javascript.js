@@ -1,17 +1,3 @@
-/**
- * Broken Authentication - JavaScript Implementation for PlayCode.io
- * Educational demonstration of authentication vulnerabilities and secure practices
- * 
- * Author: MiniMax Agent
- * Module Reference: Module 3 - Broken Authentication
- * Platform: JavaScript (playcode.io compatible)
- * Last Updated: 2025-11-27
- * 
- * ⚠️  WARNING: This file contains BOTH vulnerable and secure code examples
- *    Vulnerable examples are for EDUCATIONAL PURPOSES ONLY
- *    Never use vulnerable code in production applications!
- */
-
 // ============================================================================k
 // 1. VULNERABLE PASSWORD HANDLING (EDUCATIONAL ONLY)
 // ============================================================================

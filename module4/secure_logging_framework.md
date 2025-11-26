@@ -1,7 +1,5 @@
 # Secure Logging Framework Implementation
 
-**Author:** MiniMax Agent  
-**Date:** 2025-11-15
 
 ## Overview
 

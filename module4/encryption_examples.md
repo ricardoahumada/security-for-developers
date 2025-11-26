@@ -1,7 +1,5 @@
 # Data Encryption Examples
 
-**Author:** MiniMax Agent  
-**Date:** 2025-11-15
 
 ## Overview
 

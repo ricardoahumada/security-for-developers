@@ -1,5 +1,4 @@
 // SQL Injection Prevention - JavaScript Implementation for playcode.io
-// Author: MiniMax Agent
 // Purpose: Demonstrate SQL injection attacks and prevention techniques
 
 console.log("=== SQL Injection Prevention Demo (JavaScript) ===\n");

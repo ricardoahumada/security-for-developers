@@ -1,9 +1,5 @@
 # Secure File Upload Implementation Examples
 
-**Author:** MiniMax Agent  
-**Module Reference:** Module 3 - File Management Vulnerabilities  
-**Last Updated:** 2025-11-15  
-
 ## Overview
 This file contains comprehensive code examples demonstrating secure file upload implementations, including validation, storage security, virus scanning, processing controls, and access management across different programming languages and frameworks.
 

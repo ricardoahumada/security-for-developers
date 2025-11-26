@@ -1,8 +1,5 @@
 # Cloud Security Frameworks
 
-**Author:** MiniMax Agent  
-**Date:** 2025-11-15
-
 ## Overview
 
 This document provides comprehensive cloud security framework implementations for AWS, Azure, and GCP, including infrastructure-as-code security templates, compliance automation, and multi-cloud security management.

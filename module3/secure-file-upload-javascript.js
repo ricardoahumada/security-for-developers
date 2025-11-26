@@ -4,9 +4,6 @@
  * A comprehensive browser-based file upload security framework demonstrating
  * both vulnerable and secure implementations for educational purposes.
  * 
- * Author: MiniMax Agent
- * Module: Module 3 - File Management Vulnerabilities
- * Platform: Browser-compatible (playcode.io ready)
  */
 
 class FileSecurityConfig {

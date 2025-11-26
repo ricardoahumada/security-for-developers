@@ -2,10 +2,6 @@
  * XSS Prevention JavaScript Implementation
  * Transformed from PHP examples for playcode.io execution
  * 
- * Author: MiniMax Agent
- * Module Reference: Module 3 - Cross-Site Scripting (XSS) Prevention
- * Last Updated: 2025-11-26
- * 
  * This file contains comprehensive XSS prevention techniques
  * including vulnerable examples, secure implementations, and testing frameworks.
  */

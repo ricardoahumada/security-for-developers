@@ -1,9 +1,5 @@
 # SQL Injection Prevention Code Examples
 
-**Author:** MiniMax Agent  
-**Module Reference:** Module 3 - Injection Attacks  
-**Last Updated:** 2025-11-15  
-
 ## Overview
 This file contains practical code examples demonstrating SQL injection prevention techniques across different programming languages and frameworks.
 

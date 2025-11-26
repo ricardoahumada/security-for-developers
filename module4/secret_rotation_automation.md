@@ -1,7 +1,5 @@
 # Secret Rotation Automation
 
-**Author:** MiniMax Agent  
-**Date:** 2025-11-15
 
 ## Overview
 
