@@ -406,7 +406,7 @@ class ThreatAwareCORS {
       score: threatScore,
       indicators: indicators
     };
-  }
+  }<>
 
   async checkDomainReputation(domain) {
     // This would integrate with a threat intelligence service

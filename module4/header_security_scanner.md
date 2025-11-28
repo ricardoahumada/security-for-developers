@@ -545,11 +545,11 @@ async function runHeaderScan() {
 module.exports = HeaderSecurityScanner;
 
 // Uncomment to run standalone
-// runHeaderScan().then(results => {
-//   console.log('\n✅ Scan completed successfully');
-// }).catch(error => {
-//   console.error('\n❌ Scan failed:', error.message);
-// });
+runHeaderScan().then(results => {
+  console.log('\n✅ Scan completed successfully');
+}).catch(error => {
+  console.error('\n❌ Scan failed:', error.message);
+});
 ```
 
 ## 2. Advanced Header Scanner with Authentication Support
